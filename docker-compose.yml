@@ -1,0 +1,50 @@
+version: '3'
+services:
+
+  #PHP Service
+  php:
+    build: php
+    container_name: dev_webapp_pristine
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./public_html:/code
+
+  #Nginx Service
+  nginx:
+    image: nginx:latest
+    container_name: dev_webserver_pristine
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./conf:/etc/nginx/conf.d/
+      - ./public_html:/code
+    links:
+      - php
+    ports:
+      - "8080:80"
+      - "443:443"
+
+  #MySQL Service
+  mysql:
+    image: mysql:latest
+    container_name: dev_mysql_pristine
+    environment:
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: default_schema
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: dev_pma_pristine
+    links:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      UPLOAD_LIMIT: 64M
+    restart: always
+    ports:
+      - 8183:80
